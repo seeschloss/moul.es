@@ -10,6 +10,8 @@ if (isset($_GET['route'])) {
 	$route = explode('/', $_GET['route']);
 } else if (isset($argv[2])) {
 	$route = explode('/', $argv[2]);
+} else {
+	$route = explode('/', $_SERVER['REQUEST_URI']);
 }
 switch ($route[1]) {
 	case '':
@@ -106,6 +108,6 @@ switch ($route[1]) {
 	default:
 		header('HTTP/1.0 404 Not found');
 		header('Content-Type: text/plain; charset=utf8');
-		echo $_GET['route'];
+		echo implode('/', $route);
 }
 
