@@ -1,0 +1,99 @@
+.match
+	{
+	background-color:	#FFDDDD;
+	}
+
+td.tableau
+	{
+	}
+
+td.tableau table 
+	{
+	border-collapse:	collapse;
+	background-color:	#FAFAFA;
+	margin:			0;
+	margin-right:		0.5em;
+	margin-left:		0.5em;
+	}
+
+td.tableau table th[class="τ"]
+	{
+	font-family:		serif;
+	}
+
+td.tableau table td
+	{
+	border:			1px dashed #AAAAAA;
+	padding:		0.1em 0.5em;
+	font-size:		85%;
+	}
+
+a
+	{
+	color:			#AAAAAA;
+	text-decoration:	none;
+	}
+
+a:hover
+	{
+	color:			#888888;
+	text-decoration:	underline;
+	}
+
+a.stats
+	{
+	color:			black;
+	text-decoration:	underline;
+	}
+
+a.stats:hover
+	{
+	text-decoration:	none;
+	}
+
+div.header
+	{
+	font-weight:		bold;
+	padding-left:		1ex;
+	font-size:		120%;
+	}
+
+.highlightedNorloge
+	{
+	background-color:	#BFD4FF;
+	}
+
+a.hfrsmiley, .boardindex a
+	{
+	color:			#29447B;
+	}
+
+a.hfrsmiley img
+	{
+	display: none;
+	}
+
+a.hfrsmiley:hover img
+	{
+	display: inline;
+	position: absolute;
+	}
+
+span.norloge, .boardindex strong a
+	{
+	color:			#5F7FBF;
+	}
+
+div.fortune
+	{
+	border-color:		#5D7CBA;
+	border-width:		2px 0 0 2px;
+	border-style:		solid;
+	margin-top:		3em;
+	padding-left:		1ex;
+	}
+
+div.title
+	{
+	font-size:		150%;
+	}

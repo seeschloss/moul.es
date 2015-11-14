@@ -1,0 +1,37 @@
+* {
+    font-family: Verdana, Arial, Helvetica, sans-serif, monospace;
+}
+
+body {  
+    color: #000000;  
+}
+
+a img { border : none; }
+
+div.centre {  
+    text-align:center;
+}
+
+div.boardindex {
+	text-align: justify;
+	font-size: 11px;
+	padding: 10px;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+a.boardindex:link,a.boardindex:visited,a.boardindex:active {
+	text-decoration:none;
+	color: red;
+}
+
+div.boardleftmsg {
+	float: left;
+	margin-top: 3px;
+}
+
+div.boardrightmsg {
+	margin-left: 170px;
+	margin-top: 3px;
+	padding-left: 5px;
+}
