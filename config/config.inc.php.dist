@@ -1,0 +1,119 @@
+<?php
+
+require __DIR__."/../includes/db.inc.php";
+
+$databases = array(
+	'stats'    => new db("host", "user", "pass", "tribunes_stats"),
+	'archives' => new db("host", "user", "pass", "tribunes"),
+);
+
+$global_config = array(
+	'dlfp.moul.es' => array(
+		'title' => 'Da French Bouchot',
+		'url' => 'http://linuxfr.org/board',
+		'local_url' => 'http://dlfp.moul.es',
+		'elements' => 40,
+		'backend' => array(
+			'cookie' => 'linuxfr.org_session=xyz42',
+			'post_url' => 'http://linuxfr.org/board',
+			'post_fields' => 'board[message]',
+			'referer' => "http://linuxfr.org/board",
+		),
+		'history' => array(
+			'table' => "dlfp_mem",
+			'table_realtime' => "dlfp",
+			'db' => $databases['stats'],
+		),
+		'stats' => array(
+			'table' => "dlfp",
+			'table_answers' => "dlfp_answers",
+			'db' => $databases['stats'],
+		),
+		'archive' => array(
+			'table' => "dlfp",
+			'db' => $databases['archives'],
+		),
+		'fortunes' => array(
+			'ua' => "Fortunes bot",
+			'history_table' => "fortunes_dlfp",
+			'table' => "fortunes_dlfp",
+			'prefix' => "La voilà : http://dlfp.moul.es/fortunes#fortune-",
+			'db' => $databases['stats'],
+		),
+	),
+	'euromussels.moul.es' => array(
+		'title' => 'Euromussels',
+		'url' => 'http://euromussels.eu/tribune',
+		'local_url' => 'http://euromussels.moul.es',
+		'elements' => 20,
+		'backend' => array(
+			'cookie' => '',
+			'post_url' => 'http://euromussels.eu/tribune/post',
+			'post_fields' => 'message',
+			'referer' => "http://euromussels.eu/tribune",
+		),
+		'history' => array(
+			'table' => "euromussels",
+			'table_realtime' => "euromussels",
+			'db' => $databases['stats'],
+		),
+		'stats' => array(
+			'table' => "euromussels",
+			'db' => $databases['stats'],
+		),
+		'archive' => array(
+			'table' => "euromussels",
+			'db' => $databases['archives'],
+		),
+		'fortunes' => array(
+			'ua' => "deeplop",
+			'history_table' => "euromussels",
+			'table' => "fortunes_euromussels",
+			'prefix' => "La voilà : http://prout?",
+			'db' => $databases['stats'],
+		),
+	),
+	'hadoken.moul.es' => array(
+		'title' => 'Hadoken',
+		'url' => 'http://hadoken.free.fr/board',
+		'local_url' => 'http://hadoken.moul.es',
+		'elements' => 20,
+		'backend' => array(
+			'cookie' => '',
+			'post_url' => 'http://hadoken.free.fr/board/post.php',
+			'post_fields' => 'message',
+			'referer' => "http://hadoken.free.fr/board",
+		),
+		'history' => array(
+			'table' => "hadoken",
+			'table_realtime' => "hadoken",
+			'db' => $databases['stats'],
+		),
+	),
+	'moules.moul.es' => array(
+		'title' => 'Moules',
+		'url' => 'http://moules.org',
+		'local_url' => 'http://moules.moul.es',
+		'elements' => 20,
+		'backend' => array(
+			'cookie' => '',
+			'post_url' => 'http://moules.org/board/add.php',
+			'post_fields' => 'message',
+			'referer' => "http://moules.org/board/",
+		),
+		'stats' => array(
+			'table' => "moules",
+			'db' => $databases['stats'],
+		),
+		'archive' => array(
+			'table' => "moules",
+			'db' => $databases['archives'],
+		),
+		'history' => array(
+			'table' => "moules",
+			'table_realtime' => "moules",
+			'db' => $databases['stats'],
+		),
+	),
+);
+

@@ -1,0 +1,3 @@
+# protegeons la vie privee des moules, toussa
+User-agent: *
+Disallow: /*
