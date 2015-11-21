@@ -17,7 +17,7 @@ class config {
 			$host = $_GET['host'];
 		} else if (isset($argv[1])) {
 			$host = $argv[1];
-		} else {
+		} else if (isset($_SERVER['HTTP_HOST'])) {
 			list($host) = explode('.', $_SERVER['HTTP_HOST']);
 		}
 
