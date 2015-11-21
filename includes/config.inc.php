@@ -8,11 +8,9 @@ class config {
 
 	static public function init($tribune = NULL) {
 		global $global_config;
-
-		self::$config = $global_config['dlfp.moul.es'];
-		self::$id = 'dlfp.moul.es';
-		
 		global $argv;
+
+		$host = $tribune;
 		if (isset($_GET['host'])) {
 			$host = $_GET['host'];
 		} else if (isset($argv[1])) {
@@ -26,10 +24,12 @@ class config {
 			self::$id = $host;
 		}
 
-		if (isset($tribune) and isset($global_config[$tribune . ".moul.es"])) {
-			self::$config = $global_config[$tribune . ".moul.es"];
+		if (isset($global_config[$host . ".moul.es"])) {
+			self::$config = $global_config[$host . ".moul.es"];
 			self::$id = $host;
 		}
+
+		return isset(self::$config);
 	}
 
 	static public function id() {

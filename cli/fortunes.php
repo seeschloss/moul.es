@@ -6,7 +6,7 @@ ini_set('display_errors', true);
 $test = false;
 $silent = false;
 
-$tribune = "dlfp";
+$tribune = NULL;
 
 if ($argc > 1) foreach ($argv as $arg) {
 	switch ($arg) {
@@ -23,7 +23,9 @@ if ($argc > 1) foreach ($argv as $arg) {
 
 require_once __DIR__."/../includes/include.inc.php";
 
-config::init($tribune);
+if (!config::init($tribune)) {
+	exit();
+}
 
 $f = fopen('php://stdin', 'r');
 
@@ -193,7 +195,6 @@ function save_fortune($fortune_post, $posts) {
 		foreach ($posts as $post) {
 			echo "- ".$post['time']." #".$post['id']." ".$post['login']."> ".$post['message']."\n";
 		}
-		return;
 	}
 
 	$fortune_login = config::get('fortunes')['db']->real_escape_string($fortune_post['login']);
@@ -217,13 +218,19 @@ function save_fortune($fortune_post, $posts) {
 		$post_login = config::get('fortunes')['db']->real_escape_string($post['login']);
 		$post_message = config::get('fortunes')['db']->real_escape_string($post['message']);
 
+		$table = config::get('fortunes')['table'];
+
 		$query = <<<SQL
-		INSERT INTO {config::get('fortunes')['table']} (fortune_id, id, time, info, login, message, fortune_login, fortune_time, fortune_info, fortune_post_id, fortune_message)
+		INSERT INTO {$table} (fortune_id, id, time, info, login, message, fortune_login, fortune_time, fortune_info, fortune_post_id, fortune_message)
 		VALUES ('$fortune_id', '$post_id', '$post_time', '$post_info', '$post_login', '$post_message', '$fortune_login', '$fortune_time', '$fortune_info', '$fortune_post_id', '$fortune_message'
 		);
 SQL;
 
-		config::get('fortunes')['db']->query($query);
+		if ($test) {
+			echo $query."\n";
+		} else {
+			config::get('fortunes')['db']->query($query);
+		}
 	}
 
 	return $fortune_id;
