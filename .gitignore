@@ -1,1 +1,4 @@
+cert/
+logs/
 config/config.inc.php
+*.swp
