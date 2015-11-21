@@ -46,8 +46,6 @@ switch ($route[1]) {
 		$nb_posts = 100;
 		if (isset($_REQUEST['n'])) {
 			$nb_posts = min(5000, $_REQUEST['n']);
-		} else if (isset($_REQUEST['bla']) || isset($argv[1])) {
-			$nb_posts = 99999999999;
 		}
 
 		header("Content-Type: text/json; charset=utf-8");
