@@ -10,7 +10,7 @@ class Fortunes {
 	public $fortunes = array();
 
 	public function select() {
-		$query = "SELECT DISTINCT fortune_id, fortune_time, fortune_login FROM ".config::get('fortunes')['table']." WHERE 1";
+		$query = "SELECT DISTINCT fortune_id, fortune_time, fortune_login, fortune_message FROM ".config::get('fortunes')['table']." WHERE 1";
 		if (isset($this->author))
 			{
 			$query .= " AND fortune_login='".config::get('fortunes')['db']->real_escape_string($this->author)."'";
@@ -38,6 +38,7 @@ class Fortunes {
 			$time->setTimeZone ($tz);
 			$fortune->time = $time->format("d/m/Y à H:i:s");
 			$fortune->author = $row['fortune_login'];
+			$fortune->message = $row['fortune_message'];
 
 			return array($row['fortune_id'] => $fortune);
 		});
@@ -133,6 +134,7 @@ class Fortune {
 	public $id = null;
 	public $time = null;
 	public $author = null;
+	public $message = null;
 
 	public $posts = array();
 
@@ -193,10 +195,22 @@ SQL;
 		});
 	}
 
+	function get_comment() {
+		if ($this->message !== null ) {
+			if (preg_match('/[^\/]+\/\/(.*)/', $this->message, $matches)) {
+				return " « ".trim($matches[1])." »";
+			} else
+				return null;
+		} else {
+			return null;
+		}
+	}
+
+
 	public function show() {
 		$html = <<<EOT
 		<div class="fortune">
-			<div class="header" id="fortune-{$this->id}">Fortune n° <a class='fortune_no' href='/fortune/{$this->id}'>{$this->id}</a>, par <a class='par' href='/fortunes/par/{$this->author}'>{$this->author}</a> le {$this->time}</div>
+			<div class="header" id="fortune-{$this->id}">Fortune n° <a class='fortune_no' href='/fortune/{$this->id}'>{$this->id}</a>, par <a class='par' href='/fortunes/par/{$this->author}'>{$this->author}</a> le {$this->time}{$this->get_comment()}</div>
 
 EOT;
 
