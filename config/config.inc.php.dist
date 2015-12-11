@@ -19,6 +19,9 @@ $global_config = array(
 			'post_fields' => 'board[message]',
 			'referer' => "http://linuxfr.org/board",
 		),
+		'totoz' => array(
+			'path' => 'https://nsfw.totoz.eu/gif/<TOTOZ>',
+		),
 		'history' => array(
 			'table' => "dlfp_mem",
 			'table_realtime' => "dlfp",
@@ -52,6 +55,9 @@ $global_config = array(
 			'post_fields' => 'message',
 			'referer' => "http://euromussels.eu/tribune",
 		),
+		'totoz' => array(
+			'path' => 'https://nsfw.totoz.eu/gif/<TOTOZ>',
+		),
 		'history' => array(
 			'table' => "euromussels",
 			'table_realtime' => "euromussels",
@@ -84,6 +90,9 @@ $global_config = array(
 			'post_fields' => 'message',
 			'referer' => "http://hadoken.free.fr/board",
 		),
+		'totoz' => array(
+			'path' => 'https://nsfw.totoz.eu/gif/<TOTOZ>',
+		),
 		'history' => array(
 			'table' => "hadoken",
 			'table_realtime' => "hadoken",
@@ -100,6 +109,9 @@ $global_config = array(
 			'post_url' => 'http://moules.org/board/add.php',
 			'post_fields' => 'message',
 			'referer' => "http://moules.org/board/",
+		),
+		'totoz' => array(
+			'path' => 'https://nsfw.totoz.eu/gif/<TOTOZ>',
 		),
 		'stats' => array(
 			'table' => "moules",

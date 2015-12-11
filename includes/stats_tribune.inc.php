@@ -101,8 +101,8 @@ class Stats {
 		});
 
 		return $this->table(array(
-			'Totoz' => '<a href="http://totoz.eu/<TOTOZ>.gif" class="hfrsmiley" title="[:<TOTOZ>]">'.
-			           '[:<TOTOZ>...]<img src="http://totoz.eu/<TOTOZ>.gif" alt="[:<TOTOZ>]"/></a>',
+			'Totoz' => '<a href="'.config::get('totoz')['path'].'" class="hfrsmiley" title="[:<TOTOZ>]">'.
+			           '[:<TOTOZ>...]<img src="'.config::get('totoz')['path'].'" alt="[:<TOTOZ>]"/></a>',
 			'n' => '<N>',
 		), $stats, $timeref);
 	}
