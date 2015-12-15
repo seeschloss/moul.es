@@ -499,8 +499,13 @@ class Stats {
 			"Posts sans horloge"					=> $this->contextless(),
 			"Posts avec questions"					=> $this->questions(),
 			"Malcomprenants"						=> $this->misunderstand(),
-			"Ceux qui devraient se taire"			=> $this->ta_gueule(),
 		);
+
+		if (isset(config::get('stats')['table_answers'])) {
+			$stats += array(
+				"Ceux qui devraient se taire"			=> $this->ta_gueule(),
+			);
+		}
 
 		$html .= <<<HTML
 <p>
