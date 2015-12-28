@@ -22,7 +22,7 @@ switch ($route[1]) {
 		echo $stats->page();
 		break;
 	case 'conversation':
-		require "includes/tribune.inc.php";
+		require __DIR__."/../includes/tribune.inc.php";
 
 		$id = str_replace('.json', '', $route[2]);
 
