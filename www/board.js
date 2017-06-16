@@ -35,77 +35,14 @@ function analyzePostRep(popup) {
 function analyzePost(popup) {
 	var horlogeMap = new Map();
 	var countMap = new Map();
-	var listPost = document.getElementsByTagName("div");
+	var listPost = document.querySelectorAll(".post");
 	for (var i=0;i<listPost.length;i++) {
 		var elem = listPost[i];
-		if (elem.className) {
-			if (elem.className == "boardrightmsg") {
-				replaceNorloge(elem,elem,horlogeMap,countMap);
-				findHfrSmileys(elem, popup);
-			} else if (elem.className == "boardleftmsg") {
-				replaceNorloge(elem,elem,horlogeMap,countMap);
-				elem.onclick = function() {
-					var velem = this.getElementsByTagName("span")[0];
-					var elem = this.getElementsByTagName("span")[0];
-					while (velem.nextt != null)
-						velem = velem.nextt;
-					var count = 0;
-					if (velem.old != null) { count++; }
-					while (velem != elem) {
-						velem = velem.old;
-						count++;
-						if (velem == null) break;
-					}
-					if (velem == elem) {
-						if (count == 1) {
-							appendTextToMessage(this.timeValue+'¹');
-						} else if (count == 2) {
-							appendTextToMessage(this.timeValue+'²');
-						} else if (count == 3) {
-							appendTextToMessage(this.timeValue+'³');
-						} else if (count>0) {
-							appendTextToMessage(this.timeValue+':'+count);
-						} else {
-							appendTextToMessage(this.timeValue);
-						}
-					}
-				}
-				var loginid = elem.getElementsByTagName("a")[0].innerHTML;
-			}
-		}
-	}
-	for (var i=0;i<listPost.length;i++) {
-		var elem = listPost[i];
-		if (elem.className) {
-			if (elem.className == "boardrightmsg") {
-				var spans = elem.getElementsByTagName("span");
-				for (var j=0;j<spans.length;j++) {
-					var espan = spans[j];
-					if (espan.tolight) {
-						var indexNorl = getNorlogeIndex(espan.timeValue);
-						for (var k=0;k<espan.tolight.length;k++) {
-							if (espan.tolight[k] == null) continue;
-							if (espan.tolight[k].parentElem.className != "boardleftmsg") continue;
-							if (indexNorl != null) {
-								var velem = espan.tolight[k];
-								while (velem.nextt != null)
-									velem = velem.nextt;
-								for (var l = 1;l<indexNorl;l++) {
-									velem = velem.old;
-									if (velem == null) break;
-								}
-								if (velem != espan.tolight[k]) {
-									espan.tolight[k] = null;
-									continue;
-								}
-							}
-							
-							var loginid = espan.tolight[k].parentElem.getElementsByTagName("a")[0].innerHTML;
-						}
-					}
-				}
-			}
-		}
+		var message = elem.querySelector(".message");
+		replaceNorloge(message, elem, horlogeMap, countMap);
+
+		var clock = elem.querySelector(".post-clock");
+		replaceNorloge(clock, elem, horlogeMap, countMap);
 	}
 }
 
@@ -134,7 +71,7 @@ function buildNorlogeList(espan,timeValue,assertSize,horlogeMap) {
 /**
  * Replace norloge found in the page with their dynamic equivalent
  * @param elem - the current element
- * @param rootelem - the root element (either boardleftmsg or boardrightmsg)
+ * @param rootelem - the root element (post)
  * @param horlogeMap - map time -> list
  * @param countMap - map for counting element at the same time value
  */
@@ -164,19 +101,7 @@ function replaceNorloge(elem,rootelem,horlogeMap,countMap) {
 					espan.className = "norloge";
 					espan.appendChild(document.createTextNode(array[j]));
 					espan.timeValue = array[j];
-					if (rootelem.className != 'boardleftmsg') {
-					}
 					espan.parentElem = rootelem;
-					espan.parentElem.nextElem = getNextWithClass(espan.parentElem,"boardrightmsg");
-					if (rootelem.className == 'boardleftmsg') {
-						rootelem.timeValue = espan.timeValue;
-						var old = countMap.get(espan.timeValue);
-						if (old != null) {
-							espan.old = old;
-							old.nextt = espan;
-						}
-						countMap.put(espan.timeValue,espan);
-					}
 					espan.tolight = new Array();
 					var timeValue = espan.timeValue;
 					if (timeValue.length == 5) {
@@ -402,30 +327,14 @@ function highLight(espan) {
 		for (var i=0;i<espan.tolight.length;i++) {
 			var elem = espan.tolight[i];
 			if (elem == null) continue;
-			if (elem.parentElem.className == "boardleftmsg" && 
-			    espan.parentElem.className != "boardleftmsg") {
-				if (indexNorl != null) {
-					var velem = elem;
-					while (velem.nextt != null)
-						velem = velem.nextt;
-					for (var j = 1;j<indexNorl;j++) {
-						velem = velem.old;
-						if (velem == null) break;
-					}
-					if (velem != elem) {
-						espan.tolight[i] = null;
-						continue;
-					}
-				}
-				var boardrightmsg = elem.parentElem.nextElem;
-				//boardrightmsg.style.backgroundColor = "#8B9BBA";
-				boardrightmsg.firstChild.className = "highlightedNorloge";
-			}
-			if (elem != espan)
-				{
-				//elem.style.backgroundColor = "#8B9BBA";
+
+			if (elem != espan) {
 				elem.className = "highlightedNorloge";
+				while ((elem = elem.parentElement) && !elem.classList.contains("post"));
+				if (elem) {
+					elem.classList.add("highlightedNorloge");
 				}
+			}
 		}
 	}
 }
@@ -440,15 +349,12 @@ function unHighLight(espan) {
 		for (var i=0;i<espan.tolight.length;i++) {
 			var elem = espan.tolight[i];
 			if (elem == null) continue;
-			if (elem.parentElem.className == "boardleftmsg") {
-				var boardrightmsg = elem.parentElem.nextElem;
-				if (boardrightmsg != null) {
-					boardrightmsg.firstChild.className = "";
-					//boardrightmsg.style.backgroundColor = "transparent";
-				}
-			}
-			//elem.style.backgroundColor = "transparent";
+
 			elem.className = "norloge";
+			while ((elem = elem.parentElement) && !elem.classList.contains("post"));
+			if (elem) {
+				elem.classList.remove("highlightedNorloge");
+			}
 		}
 	}
 }

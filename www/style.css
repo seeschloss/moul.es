@@ -79,6 +79,11 @@ a.hfrsmiley:hover img
 	position: absolute;
 	}
 
+.norloge, .highlightedNorloge
+	{
+	cursor: pointer;
+	}
+
 span.norloge, .boardindex strong a
 	{
 	color:			#5F7FBF;
@@ -97,3 +102,55 @@ div.title
 	{
 	font-size:		150%;
 	}
+
+.post
+	{
+	display: flex;
+	}
+
+.post .post-clock:before
+	{
+	content: "[";
+	font-weight: normal;
+	}
+
+.post .post-clock:after
+	{
+	content: "]";
+	font-weight: normal;
+	}
+
+.post .post-clock
+	{
+	margin-right: 1ex;
+	font-weight: bold;
+	}
+
+.post .post-author
+	{
+	flex: 0 0 140px;
+	white-space: nowrap;
+	overflow: hidden;
+	}
+
+.info:before
+	{
+	content: "(";
+	}
+.info:after
+	{
+	content: ")";
+	}
+.post .info:before, .post .info:after { content: ""; }
+
+.info
+	{
+	font-style: italic;
+	color: #007589;
+	}
+
+.post .message:before
+	{
+	content: "- ";
+	}
+

@@ -10,14 +10,30 @@ class Fortunes {
 	public $fortunes = array();
 
 	public function select() {
-		$query = "SELECT DISTINCT fortune_id, fortune_time, fortune_login, fortune_message FROM ".config::get('fortunes')['table']." WHERE 1";
+		$query = "SELECT DISTINCT fortune_id, fortune_time, fortune_post_id, fortune_info, fortune_login, fortune_message FROM ".config::get('fortunes')['table']." WHERE 1";
 		if (isset($this->author))
 			{
-			$query .= " AND fortune_login='".config::get('fortunes')['db']->real_escape_string($this->author)."'";
+			if (strpos($this->author, "info:") === 0)
+				{
+				$info = substr($this->author, 5);
+				$query .= " AND fortune_info='".config::get('fortunes')['db']->real_escape_string($info)."'";
+				}
+			else
+				{
+				$query .= " AND fortune_login='".config::get('fortunes')['db']->real_escape_string($this->author)."'";
+				}
 			}
 		if (isset($this->actor))
 			{
-			$query .= " AND login='".config::get('fortunes')['db']->real_escape_string($this->actor)."'";
+			if (strpos($this->actor, "info:") === 0)
+				{
+				$info = substr($this->actor, 5);
+				$query .= " AND info='".config::get('fortunes')['db']->real_escape_string($info)."'";
+				}
+			else
+				{
+				$query .= " AND login='".config::get('fortunes')['db']->real_escape_string($this->actor)."'";
+				}
 			}
 		if (isset($this->id))
 			{
@@ -36,8 +52,10 @@ class Fortunes {
 			$tz = new DateTimeZone("Europe/Paris");
 			$time = DateTime::createFromFormat('YmdHis', $row['fortune_time']);
 			$time->setTimeZone ($tz);
+
 			$fortune->time = $time->format("d/m/Y à H:i:s");
-			$fortune->author = $row['fortune_login'];
+			$fortune->author = $fortune->post->display_username();
+			$fortune->author_login = $fortune->post->login;
 			$fortune->message = $row['fortune_message'];
 
 			return array($row['fortune_id'] => $fortune);
@@ -136,6 +154,8 @@ class Fortune {
 	public $author = null;
 	public $message = null;
 
+	public $post = null;
+
 	public $posts = array();
 
 	public function __construct($id) {
@@ -151,9 +171,22 @@ class Fortune {
 		 ORDER BY id ASC
 SQL;
 
-		$this->posts = config::get('fortunes')['db']->query($query, function($row) {
+		 $fortune = $this;
+
+		$this->posts = config::get('fortunes')['db']->query($query, function($row) use($fortune) {
+			if (!isset($fortune->post)) {
+				$fortune->post = new Post([
+					'id' => $row['fortune_post_id'],
+					'time' => $row['fortune_time'],
+					'info' => $row['fortune_info'],
+					'login' => $row['fortune_login'],
+					'message' => $row['fortune_message'],
+				]);
+			}
+
 			return array($row['id'] => new Post($row));
 		});
+
 	}
 
 	function get_comment() {
@@ -169,9 +202,15 @@ SQL;
 
 
 	public function show() {
+		if ($this->post->is_anonymous()) {
+			$link_fortunes_by = "/fortunes/par/info:{$this->post->info}";
+		} else {
+			$link_fortunes_by = "/fortunes/par/{$this->post->login}";
+		}
+
 		$html = <<<EOT
 		<div class="fortune">
-			<div class="header" id="fortune-{$this->id}">Fortune n° <a class='fortune_no' href='/fortune/{$this->id}'>{$this->id}</a>, par <a class='par' href='/fortunes/par/{$this->author}'>{$this->author}</a> le {$this->time}{$this->get_comment()}</div>
+			<div class="header" id="fortune-{$this->id}">Fortune n° <a class='fortune_no' href='/fortune/{$this->id}'>{$this->id}</a>, par <a class='par' href='{$link_fortunes_by}'>{$this->author}</a> le {$this->time}{$this->get_comment()}</div>
 
 EOT;
 
@@ -190,12 +229,18 @@ EOT;
 				$clock = $post->clock();
 			}
 
+			if ($post->is_anonymous()) {
+				$link_fortunes_with = "/fortunes/avec/info:{$post->info}";
+			} else {
+				$link_fortunes_with = "/fortunes/avec/{$post->login}";
+			}
+
 			$html .= <<<EOT
-		<div class="boardleftmsg">
-			[<strong>{$clock}</strong>]
-			<a href='/fortunes/avec/{$post->login}' title="{$post->info}">{$post->display_username()}</a>
-		</div>
-		<div class="boardrightmsg"><span> <b>-</b> {$post->message}</span></div>
+	<div class="post">
+		<span class="post-clock">{$clock}</span>
+		<span class="post-author"><a href='$link_fortunes_with' title="{$post->info}">{$post->display_username()}</a></span>
+		<span class="message">{$post->message}</span>
+	</div>
 EOT;
 			}
 
