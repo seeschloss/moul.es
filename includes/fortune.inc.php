@@ -214,11 +214,24 @@ SQL;
 
 EOT;
 
+		$history_base = config::get('history')['url'];
+
 		foreach ($this->posts as $post)
 			{
+			if ($history_base) {
+				$history_url = strtr($history_base, [
+					'%post_day' => $post['hist_jour'],
+					'%post_id' => $post['id'],
+				]);
+
+				$clock = "<a href='{$history_url}' title='id={$post['id']}'>{$post['hist_cur']}</a>";
+			} else {
+				$clock = $post['hist_cur'];
+			}
+
 			$html .= <<<EOT
 		<div class="boardleftmsg">
-			[<strong><a href='http://bombefourchette.com/t/dlfp/{$post['hist_jour']}#{$post['id']}' title='id={$post['id']}'>{$post['hist_cur']}</a></strong>]
+			[<strong>{$clock}</strong>]
 			<a href='/fortunes/avec/{$post['login']}' title="{$post['info']}">{$post['login']}</a>
 		</div>
 		<div class="boardrightmsg"><span> <b>-</b> {$post['message']}</span></div>

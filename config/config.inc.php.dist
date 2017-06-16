@@ -26,6 +26,7 @@ $global_config = array(
 			'table' => "dlfp_mem",
 			'table_realtime' => "dlfp",
 			'db' => $databases['stats'],
+			'url' => "http://bombefourchette.com/t/dlfp/%post_day#%post_id",
 		),
 		'stats' => array(
 			'table' => "dlfp",
@@ -62,6 +63,7 @@ $global_config = array(
 			'table' => "euromussels",
 			'table_realtime' => "euromussels",
 			'db' => $databases['stats'],
+			'url' => "http://bombefourchette.com/t/eurofaab/%post_day#%post_id",
 		),
 		'stats' => array(
 			'table' => "euromussels",
