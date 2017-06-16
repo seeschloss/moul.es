@@ -4,6 +4,10 @@ class Backend {
 	private $db_result;
 
 	function __construct($nb_posts) {
+		$this->get_latest_posts($nb_posts);
+	}
+
+	function get_latest_posts($nb_posts) {
 		$query  = "SELECT id, time, login, info, message";
 
 		if ($nb_posts > 100000) {
@@ -11,8 +15,18 @@ class Backend {
 		} else {
 			$query .= "  FROM ".config::get("history")['table'];
 		}
-		$query .= "  ORDER BY id DESC";
+		$query .= "  ORDER BY time DESC, id DESC";
 		$query .= "  LIMIT ".(int)$nb_posts;
+
+		$this->db_result = config::get("history")['db']->query($query);
+	}
+
+	function get_post_ids($ids) {
+		$query  = "SELECT id, time, login, info, message";
+		$query .= "  FROM ".config::get("history")['table_realtime'];
+		$query .= "  ORDER BY time DESC, id DESC";
+		$query .= "  WHERE id IN (".$ids.")";
+		$query .= "  LIMIT 10000";
 
 		$this->db_result = config::get("history")['db']->query($query);
 	}
@@ -23,6 +37,22 @@ class Backend {
 		} else {
 			return $record;
 		}
+	}
+
+	function tsv() {
+		$tsv = "";
+
+		$lines = [];
+
+		while ($post = $this->next_post()) {
+			$lines[] = $post->tsv();
+		}
+
+		foreach (array_reverse($lines) as $line) {
+			$tsv .= $line;
+		}
+
+		return $tsv;
 	}
 
 	function xml() {

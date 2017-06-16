@@ -147,6 +147,16 @@ class Post {
 		);
 	}
 
+	function tsv() {
+		$message = str_replace("\t", " ", $this->message);
+		$info = str_replace("\t", " ", $this->info);
+		$login = str_replace("\t", " ", $this->login);
+
+		return <<<TSV
+{$this->id}\t{$this->time}\t{$info}\t{$login}\t{$message}\n
+TSV;
+	}
+
 	function xml() {
 		$message = htmlspecialchars($this->message);
 		return <<<XML
@@ -161,6 +171,10 @@ XML;
 
 	function has_totoz() {
 		return !!preg_match("/\[:.*\]/", $this->message);
+	}
+
+	function has_redface() {
+		return !!preg_match("/[^[]:o/", $this->message);
 	}
 
 	function has_bold() {
@@ -202,11 +216,15 @@ XML;
 		return !!preg_match("@\?$$@", $this->message);
 	}
 
+	function is_anonymous() {
+		return !($this->login && $this->login != "-");
+	}
+
 	function display_username() {
-		if ($this->login) {
-			return $this->login;
+		if ($this->is_anonymous()) {
+			return "<span class='info'>".$this->info."</span>";
 		} else {
-			return "<i>".$this->info."</i>";
+			return $this->login;
 		}
 	}
 
