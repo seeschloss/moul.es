@@ -145,53 +145,14 @@ class Fortune {
 	public function load() {
 		$fortunes_table = config::get('fortunes')['table'];
 		$query  = <<<SQL
-		SELECT fortune_id, fortune_time, fortune_login, id, time, login, info, message 
+		SELECT *
 		 FROM {$fortunes_table}
 		 WHERE fortune_id = {$this->id}
 		 ORDER BY id ASC
 SQL;
 
 		$this->posts = config::get('fortunes')['db']->query($query, function($row) {
-			$id = $row['id'];
-
-			$tz = new DateTimeZone("Europe/Paris");
-			
-			$timestr = $row['time'];
-
-			$post_time = new DateTime ($timestr);
-			$post_time->setTimeZone ($tz);
-
-			$post_debut = new DateTime($timestr);
-			$post_debut->setTimeZone ($tz);
-			$post_fin = new DateTime($timestr);
-			$post_fin->setTimeZone ($tz);
-
-			$post_debut->modify("-5 minutes");
-			$post_fin->modify("+5 minutes");
-
-			$hist_cur = $post_time->format("H:i:s");
-			$hist_deb = $post_debut->format("YmdHis");
-			$hist_fin = $post_fin->format("YmdHis");
-			$hist_jour = $post_fin->format("Y-m-d");
-
-			$info = $row['info'];
-			$login = $row['login'];
-
-			$message = $row['message'];
-
-			return array(
-				$id => array(
-					'id' => $id,
-					'info' => $info,
-					'login' => $login,
-					'message' => $message,
-					'time' => $row['time'],
-					'hist_deb' => $hist_deb,
-					'hist_cur' => $hist_cur,
-					'hist_fin' => $hist_fin,
-					'hist_jour' => $hist_jour,
-				),
-			);
+			return array($row['id'] => new Post($row));
 		});
 	}
 
@@ -220,21 +181,21 @@ EOT;
 			{
 			if ($history_base) {
 				$history_url = strtr($history_base, [
-					'%post_day' => $post['hist_jour'],
-					'%post_id' => $post['id'],
+					'%post_day' => $post->datetime()->format('Y-m-d'),
+					'%post_id' => $post->id,
 				]);
 
-				$clock = "<a href='{$history_url}' title='id={$post['id']}'>{$post['hist_cur']}</a>";
+				$clock = "<a href='{$history_url}' title='id={$post->id}'>{$post->clock()}</a>";
 			} else {
-				$clock = $post['hist_cur'];
+				$clock = $post->clock();
 			}
 
 			$html .= <<<EOT
 		<div class="boardleftmsg">
 			[<strong>{$clock}</strong>]
-			<a href='/fortunes/avec/{$post['login']}' title="{$post['info']}">{$post['login']}</a>
+			<a href='/fortunes/avec/{$post->login}' title="{$post->info}">{$post->display_username()}</a>
 		</div>
-		<div class="boardrightmsg"><span> <b>-</b> {$post['message']}</span></div>
+		<div class="boardrightmsg"><span> <b>-</b> {$post->message}</span></div>
 EOT;
 			}
 
