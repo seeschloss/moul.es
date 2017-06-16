@@ -41,58 +41,70 @@ while ($line = fgets($f)) {
 
 	if (strpos($message, '#fortune') !== FALSE) {
 loop_start:
-		if (preg_match('/#fortune ([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)-([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)/u', $message, $matches)) {
+		// Intervale
+		if (preg_match('/#fortune *([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)-([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)/u', $message, $matches)) {
 			$clocks = get_clocks($message);
 			if (count($clocks) != 2) {
 				continue;
 			}
 
-			$post1 = get_post($clocks[0], $date, $post_id);
-			$post2 = get_post($clocks[1], $date, $post_id);
-			if ($post2['id'] < $post1['id']) {
+			$reference_post = Post::get($post_id);
+
+			$post1 = Post::get_by_clock($clocks[0], $reference_post);
+			$post2 = Post::get_by_clock($clocks[1], $reference_post);
+
+			if ($post2->id < $post1->id) {
 				$a = $post2;
 				$post2 = $post1;
 				$post1 = $a;
 			}
 
-			if ($post2['id'] - $post1['id'] > 20) {
+			if ($post2->id - $post1->id > 20) {
 				// trop long
 			}
 
-			if ($post2['id'] - $post1['id'] < 2) {
+			if ($post2->id - $post1->id < 2) {
 				// trop court
 			}
 
-			$query  = "SELECT * FROM ".config::get('fortunes')['history_table'];
+			$query  = "SELECT id FROM ".config::get('fortunes')['history_table'];
 			$query .= " WHERE time < '".$date."'";
 			$query .= "   AND time > ".($date - 240000);
-			$query .= "   AND id >= ".$post1['id'];
-			$query .= "   AND id <= ".$post2['id'];
+			$query .= "   AND id >= ".$post1->id;
+			$query .= "   AND id <= ".$post2->id;
 			$query .= " ORDER BY id ASC";
 
 			$posts = array();
 			$r = config::get('fortunes')['db']->query($query);
 			if ($r) while ($row = $r->fetch_assoc()) {
-				$posts[] = $row;
+				$posts[] = Post::get($row['id']);
 			}
 
 			if (count($posts) >= 2 and count($posts) <= 20) {
-				if ($posts[0]['login'] == $user_name or $posts[count($posts) - 1]['login'] == $user_name) {
+				$first_author = $posts[0]->display_username();;
+				$last_author = $posts[count($posts) - 1]->display_username();
+
+				$fortune_author = $reference_post->display_username();
+
+				if ($first_author == $fortune_author or $last_author == $fortune_author) {
 					post($date, "C'est une autofortune ça, ça se fait pas [:mareek]");
 				} else {
-					$fortune_id = save_fortune(array('id' => $post_id, 'time' => $date, 'info' => $user_info, 'login' => $user_name, 'message' => $message), $posts);
+					$fortune_id = save_fortune($reference_post, $posts);
 					post($date, config::get('fortunes')['prefix'].$fortune_id);
 				}
 			} else if (count($posts) > 20) {
 				post($date, "Pas plus de vingt posts par fortune [:kiki]");
 			}
 
-		} else if (preg_match('/#fortune ([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)( +[0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)+/u', $message, $matches)) {
+		// Liste
+		} else if (preg_match('/#fortune *([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)( +[0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)+/u', $message, $matches)) {
 			$clocks = get_clocks($message);
+
+			$reference_post = Post::get($post_id);
 
 			$posts = array();
 			foreach ($clocks as $clock) {
-				if ($post = get_post($clock, $date, $post_id)) {
+				if ($post = Post::get_by_clock($clock, $reference_post)) {
 					$posts[] = $post;
 				} else if ($passes < 2) {
 					$passes++;
@@ -105,22 +117,30 @@ loop_start:
 			}
 
 			if (count($posts) >= 1 and count($posts) <= 20) {
-				if ($posts[0]['login'] == $user_name or $posts[count($posts) - 1]['login'] == $user_name) {
+				$first_author = $posts[0]->display_username();;
+				$last_author = $posts[count($posts) - 1]->display_username();
+
+				$fortune_author = $reference_post->display_username();
+
+				if ($first_author == $fortune_author or $last_author == $fortune_author) {
 					post($date, "C'est une autofortune ça, ça se fait pas [:mareek]");
 				} else {
-					$fortune_id = save_fortune(array('id' => $post_id, 'time' => $date, 'info' => $user_info, 'login' => $user_name, 'message' => $message), $posts);
+					$fortune_id = save_fortune($reference_post, $posts);
 					post($date, config::get('fortunes')['prefix'].$fortune_id);
 				}
 			} else if (count($posts) > 20) {
 				post($date, "Pas plus de vingt posts par fortune [:kiki]");
 			}
 
-		} else if (preg_match('/#fortune ([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)/u', $message, $matches)) {
+		// Une seule horloge
+		} else if (preg_match('/#fortune *([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)/u', $message, $matches)) {
 			$clocks = get_clocks($message);
+
+			$reference_post = Post::get($post_id);
 
 			$posts = array();
 			foreach ($clocks as $clock) {
-				if ($post = get_post($clock, $date, $post_id)) {
+				if ($post = Post::get_by_clock($clock, $reference_post)) {
 					$posts[] = $post;
 				} else if ($passes < 2) {
 					$passes++;
@@ -133,10 +153,15 @@ loop_start:
 			}
 
 			if (count($posts) >= 1 and count($posts) <= 20) {
-				if ($posts[0]['login'] == $user_name or $posts[count($posts) - 1]['login'] == $user_name) {
+				$first_author = $posts[0]->display_username();;
+				$last_author = $posts[count($posts) - 1]->display_username();
+
+				$fortune_author = $reference_post->display_username();
+
+				if ($first_author == $fortune_author or $last_author == $fortune_author) {
 					post($date, "C'est une autofortune ça, ça se fait pas [:mareek]");
 				} else {
-					$fortune_id = save_fortune(array('id' => $post_id, 'time' => $date, 'info' => $user_info, 'login' => $user_name, 'message' => $message), $posts);
+					$fortune_id = save_fortune($reference_post, $posts);
 					post($date, config::get('fortunes')['prefix'].$fortune_id);
 				}
 			} else if (count($posts) > 20) {
@@ -192,16 +217,19 @@ function save_fortune($fortune_post, $posts) {
 	global $test;
 
 	if ($test) {
-		foreach ($posts as $post) {
-			echo "- ".$post['time']." #".$post['id']." ".$post['login']."> ".$post['message']."\n";
+		foreach ($posts as &$post) {
+			if (!is_array($post)) {
+				$post = $post->to_array();
+			}
+			echo "- ".$post->time." #".$post->id." ".$post->login."> ".$post->message."\n";
 		}
 	}
 
-	$fortune_login = config::get('fortunes')['db']->real_escape_string($fortune_post['login']);
-	$fortune_time = config::get('fortunes')['db']->real_escape_string($fortune_post['time']);
-	$fortune_info = config::get('fortunes')['db']->real_escape_string($fortune_post['info']);
-	$fortune_post_id = config::get('fortunes')['db']->real_escape_string($fortune_post['id']);
-	$fortune_message = config::get('fortunes')['db']->real_escape_string($fortune_post['message']);
+	$fortune_login = config::get('fortunes')['db']->real_escape_string($fortune_post->login);
+	$fortune_time = config::get('fortunes')['db']->real_escape_string($fortune_post->time);
+	$fortune_info = config::get('fortunes')['db']->real_escape_string($fortune_post->info);
+	$fortune_post_id = config::get('fortunes')['db']->real_escape_string($fortune_post->id);
+	$fortune_message = config::get('fortunes')['db']->real_escape_string($fortune_post->message);
 
 	$query = "SELECT fortune_id FROM ".config::get('fortunes')['table']." ORDER BY fortune_id DESC LIMIT 1";
 	$r = config::get('fortunes')['db']->query($query);
@@ -212,11 +240,11 @@ function save_fortune($fortune_post, $posts) {
 	}
 
 	foreach ($posts as $post) {
-		$post_id = config::get('fortunes')['db']->real_escape_string($post['id']);
-		$post_time = config::get('fortunes')['db']->real_escape_string($post['time']);
-		$post_info = config::get('fortunes')['db']->real_escape_string($post['info']);
-		$post_login = config::get('fortunes')['db']->real_escape_string($post['login']);
-		$post_message = config::get('fortunes')['db']->real_escape_string($post['message']);
+		$post_id = config::get('fortunes')['db']->real_escape_string($post->id);
+		$post_time = config::get('fortunes')['db']->real_escape_string($post->time);
+		$post_info = config::get('fortunes')['db']->real_escape_string($post->info);
+		$post_login = config::get('fortunes')['db']->real_escape_string($post->login);
+		$post_message = config::get('fortunes')['db']->real_escape_string($post->message);
 
 		$table = config::get('fortunes')['table'];
 
@@ -237,7 +265,7 @@ SQL;
 }
 
 function get_post($clock, $limit_date, $limit_id) {
-	global $test;
+	global $test, $tribune;
 
 	$limit_deb = DateTime::createFromFormat('YmdHis', $limit_date);
 	$limit_fin = DateTime::createFromFormat('YmdHis', $limit_date);
