@@ -3,7 +3,7 @@
 class db extends MySQLi {
 	function __construct($host, $user, $pass, $database) {
 		parent::__construct($host, $user, $pass, $database);
-		$this->set_charset('utf8');
+		$this->set_charset('utf8mb4');
 
 		parent::query("SET time_zone = 'Europe/Paris'");
 	}
