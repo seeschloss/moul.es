@@ -19,6 +19,10 @@ class config {
 			list($host) = explode('.', $_SERVER['HTTP_HOST']);
 		}
 
+		if ($host == 'moul') {
+			$host = 'dlfp';
+		}
+
 		if (isset($global_config[$host])) {
 			self::$config = $global_config[$host];
 			self::$id = $host;
