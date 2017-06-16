@@ -447,6 +447,31 @@ class Stats {
 		), $stats, $timeref);
 	}
 
+	function redface() {
+		$timeref = microtime(true);
+
+		$query  = "SELECT username as login, SUM(redface) as posts, COUNT(message) as messages, SUM(redface)/COUNT(message) as ratio";
+		$query .= "  FROM ".config::get('history')['table'];
+		$query .= " WHERE login NOT IN (".blackliste().") AND username NOT LIKE '%Mozilla/%'";
+		$query .= " GROUP BY username";
+		$query .= " HAVING posts > 0 ";
+		if ($this->total_posts() > 10000) {
+			$query .= " AND COUNT(message)>300 ";
+		}
+		$query .= " ORDER BY SUM(redface)/COUNT(message)";
+		$query .= "  DESC LIMIT ".$this->elements;
+
+		$stats = $this->query($query, function($row) {
+			return array($row['login'] => $row);
+		});
+
+		return $this->table(array(
+			'Login' => "<login>",
+			'Posts' => "<posts>  <small>/<messages></small>",
+			'&tau;' => "<ratio>",
+		), $stats, $timeref);
+	}
+
 	function make_table($table) {
 		$html = "<table id='main'>";
 
@@ -506,6 +531,10 @@ class Stats {
 				"Ceux qui devraient se taire"			=> $this->ta_gueule(),
 			);
 		}
+
+		$stats += array(
+			":o"			=> $this->redface(),
+		);
 
 		$html .= <<<HTML
 <p>

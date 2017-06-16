@@ -85,7 +85,7 @@ function flush_queue() {
 		}
 
 
-		$query = "INSERT INTO ".config::get('stats')['table']." (id, time, info, login, message, totoz, bold, url, prems, deuz, length, url_domain, horloge, naked_url, question, username) VALUES";
+		$query = "INSERT INTO ".config::get('stats')['table']." (id, time, info, login, message, totoz, bold, url, prems, deuz, length, url_domain, horloge, naked_url, question, redface, username) VALUES";
 		$db = config::get("stats")['db'];
 
 		$parts = array();
@@ -112,6 +112,7 @@ function flush_queue() {
 				'{$post->has_horloge()}',
 				'{$post->is_naked_url()}',
 				'{$post->is_question()}',
+				'{$post->has_redface()}',
 				'{$post->display_username()}'
 			)";
 
