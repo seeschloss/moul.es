@@ -1,11 +1,16 @@
 <?php
 
 class Post {
-	static function get($id, $time = NULL) {
+	static function get($id, $time = NULL, $archives = FALSE) {
 		$query  = "SELECT id, time, login, info, message";
-		if ($time) {
+		if ($archives) {
+			$db = config::get("archive")['db'];
+			$query .= "  FROM ".config::get("archive")['table'];
+		} else if ($time) {
+			$db = config::get("history")['db'];
 			$query .= "  FROM ".config::get("history")['table_realtime'];
 		} else {
+			$db = config::get("history")['db'];
 			$query .= "  FROM ".config::get("history")['table'];
 		}
 		$query .= "  WHERE id=".(int)$id;
@@ -15,7 +20,7 @@ class Post {
 		$query .= "  ORDER BY time DESC";
 		$query .= "  LIMIT 1";
 
-		$result = config::get("history")['db']->query($query);
+		$result = $db->query($query);
 		if ($row = $result->fetch_assoc()) {
 			return new Post($row);
 		} else {

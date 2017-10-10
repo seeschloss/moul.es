@@ -16,6 +16,7 @@ require_once dirname(__FILE__)."/backend.inc.php";
 require_once dirname(__FILE__)."/fortune.inc.php";
 require_once dirname(__FILE__)."/stats_tribune.inc.php";
 require_once dirname(__FILE__)."/user_stats.inc.php";
+require_once dirname(__FILE__)."/slip_tester.inc.php";
 
 function blackliste ()
 	{

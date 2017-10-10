@@ -101,6 +101,21 @@ switch ($route[1]) {
 			echo $fortunes->page(["level" => 2]);
 			break;
 		break;
+	case 'slip-tester':
+			$tester = new Slip_Tester(isset($route[2]) ? (int)$route[2] : 0);
+			echo $tester->results();
+		break;
+	case 'slip':
+			if (isset($route[2])) {
+				$class = "Slip_".$route[2];
+
+				if (class_exists($class)) {
+					$slip = new $class();
+					header("Content-Type: text/plain; charset=utf8");
+					echo $slip->source();
+				}
+			}
+		break;
 	case 'stats':
 			$user_stats = new User_Stats();
 			$activity = array();
