@@ -48,7 +48,15 @@ loop_start:
 				continue;
 			}
 
-			$reference_post = Post::get($post_id);
+			$tries = 0;
+			while (!($reference_post = Post::get($post_id, $date)) && $tries < 10) {
+				sleep(1);
+				$tries++;
+			}
+			if (!$reference_post) {
+				fprintf(STDERR, "#fortune post (%s) not yet archived!\n", $post_id);
+				exit();
+			}
 
 			$post1 = Post::get_by_clock($clocks[0], $reference_post);
 			$post2 = Post::get_by_clock($clocks[1], $reference_post);
@@ -100,7 +108,15 @@ loop_start:
 		} else if (preg_match('/#fortune *([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)( +[0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)+/u', $message, $matches)) {
 			$clocks = get_clocks($message);
 
-			$reference_post = Post::get($post_id);
+			$tries = 0;
+			while (!($reference_post = Post::get($post_id, $date)) && $tries < 10) {
+				sleep(1);
+				$tries++;
+			}
+			if (!$reference_post) {
+				fprintf(STDERR, "#fortune post (%s) not yet archived!\n", $post_id);
+				exit();
+			}
 
 			$posts = array();
 			foreach ($clocks as $clock) {
@@ -136,7 +152,15 @@ loop_start:
 		} else if (preg_match('/#fortune *([0-2][0-9]:[0-5][0-9]:[0-5][0-9]((:[0-9])|[¹²³⁴⁵⁶⁷⁸⁹])?)/u', $message, $matches)) {
 			$clocks = get_clocks($message);
 
-			$reference_post = Post::get($post_id);
+			$tries = 0;
+			while (!($reference_post = Post::get($post_id, $date)) && $tries < 10) {
+				sleep(1);
+				$tries++;
+			}
+			if (!$reference_post) {
+				fprintf(STDERR, "#fortune post (%s) not yet archived!\n", $post_id);
+				exit();
+			}
 
 			$posts = array();
 			foreach ($clocks as $clock) {
@@ -218,9 +242,6 @@ function save_fortune($fortune_post, $posts) {
 
 	if ($test) {
 		foreach ($posts as &$post) {
-			if (!is_array($post)) {
-				$post = $post->to_array();
-			}
 			echo "- ".$post->time." #".$post->id." ".$post->login."> ".$post->message."\n";
 		}
 	}
