@@ -120,7 +120,7 @@ class Slip_Tester {
       ];
     }
 
-	function test($message) {
+	function test($message, $runs = 100) {
 		$descriptorspec = array(
 		   0 => array("pipe", "r"),
 		   1 => array("pipe", "w"),
@@ -131,7 +131,10 @@ class Slip_Tester {
 
 		foreach ($this->slips as $i => $slip) {
 			if (!isset($this->processes[$i])) {
-			  $p = proc_open("stdbuf -oL -eL ".$slip->cmd, $descriptorspec, $pipes, "/tmp", [
+			  // stdbuf est là pour forcer les slips à flusher chaque ligne qui sort, sinon
+			  // comme stdout/stderr sont des pipes et pas un TTY, il y a un gros buffer (lol)
+			  // et mon fgets() bloque comme un con parce qu'il n'a rien à lire
+			  $p = proc_open("stdbuf -oL -eL ".$slip->cmd, $descriptorspec, $pipes, $slip->cwd, [
 				  'HOME' => '/home/seeschloss',
 				  'LC_ALL' => 'en_US.UTF-8',
 			  ]);
@@ -144,38 +147,14 @@ class Slip_Tester {
 			$p = $this->processes[$i]['proc'];
 			$pipes = $this->processes[$i]['pipes'];
 
-			$runs = 100;
-			if (!$slip->persistent) {
-				$runs = 1;
-			}
-
 			$time_start = microtime(true);
 			for ($run = 0; $run < $runs; $run++) {
 			  $written = fwrite($pipes[0], $message."\n");
 			  fflush($pipes[0]);
-			  if (!$slip->persistent) {
-				  fclose($pipes[0]);
-			  }
-
-			  //usleep(1000);
-
 			  $result = fgets($pipes[1]);
-
-			  if (!$slip->persistent and !$result) {
-				  $result = stream_get_contents($pipes[2]);
-			  }
 			}
 			$time_delta = microtime(true) - $time_start;
 			$time_delta /= $runs;
-
-			if (!$slip->persistent) {
-				foreach ($this->processes[$i]['pipes'] as $pipe) {
-					@fclose($pipe);
-				}
-				proc_close($this->processes[$i]['proc']);
-
-				unset($this->processes[$i]);
-			}
 
 			$variants[$i] = [
 				'slip' => $this->slips[$i],
@@ -187,50 +166,75 @@ class Slip_Tester {
 		return $variants;
     }
 
-	function result($message) {
+	function result($message, $runs = 100) {
 		$html = "";
 
-		$variants = $this->test($message);
+		if (isset($_REQUEST['fast'])) {
+			$runs = 1;
+		}
+
+		$variants = $this->test($message, $runs);
 		$escaped_message = htmlspecialchars($message);
 
+		$total = count($variants);
+		$unique = count(array_unique(array_map(function($d) { return $d['output']; }, $variants)));
+
+		$test_id = md5($message);
+
 		$html .= <<<HTML
-			<table>
+			<a href="#{$test_id}" id="{$test_id}">#</a>
+			<table class="test" data-unique="{$unique}">
 				<tr>
 					<th>slip</th>
+					<th>langage</th>
 					<th>temps</th>
 					<th>résultat</th>
+					<th>visuel</th>
 				</tr>
 				<tr>
-					<td><em>original</em></td>
-					<td></td>
-					<td>{$escaped_message}</td>
+					<td colspan="3"><em>message original</em></td>
+					<td colspan="2">{$escaped_message}</td>
 				</tr>
 HTML;
-		$unique = array_unique(array_map(function($d) { return $d['output']; }, $variants));
-		if (count($unique) > 1) {
-			foreach ($variants as $slip_id => $variant) {
-				$escaped_result = htmlspecialchars($variant['output']);
 
-				$slip = $variant['slip'];
+		foreach ($variants as $slip_id => $variant) {
+			$variants[$slip_id]['amount'] = count(array_filter($variants, function($a) use($variant) { return $a['output'] === $variant['output']; }));
+		}
 
-				$time = str_pad(round($variant['time'] * 1000, 3), 5, '0');
+		usort($variants, function($a, $b) {
+			$amount = $b['amount'] - $a['amount'];
 
-				$html .= <<<HTML
-					<tr>
-						<td><nobr><a href="{$slip->link()}">{$slip->name}</a></nobr></td>
-						<td>{$time}ms</td>
-						<td>{$escaped_result}</td>
-					</tr>
-HTML;
+			if ($amount != 0) {
+				return $amount;
 			}
-		} else {
-			$escaped_result = htmlspecialchars($variants[0]['output']);
+
+			$output = strcmp($a['output'], $b['output']);
+
+			if ($output != 0) {
+				return $output;
+			}
+
+			return ($a['time'] * 1000 * 1000) - ($b['time'] * 1000 * 1000);
+		});
+
+		foreach ($variants as $slip_id => $variant) {
+			$escaped_result = htmlspecialchars($variant['output']);
+
+			$visuel = $this->client_slip($variant['output'], 'encoded');
+
+			$slip = $variant['slip'];
+
+			$time = str_pad(round($variant['time'] * 1000, 3), 5, '0');
+			$time_ms = $variant['time'] * 1000;
+			$percent = round($variant['amount']/$total, 2);
 
 			$html .= <<<HTML
-				<tr>
-					<td><nobr>Unanimité</nobr></td>
-					<td></td>
-					<td>{$escaped_result}</td>
+				<tr class="slip" data-amount="{$variant['amount']}" data-percent="{$percent}" data-time="{$time_ms}" data-lang="{$slip->lang}">
+					<td><nobr><a href="{$slip->link()}">{$slip->name}</a></nobr></td>
+					<td class="lang">{$slip->lang}</td>
+					<td class="time">{$time}ms</td>
+					<td class="result">{$escaped_result}</td>
+					<td class="visuel">{$visuel}</td>
 				</tr>
 HTML;
 		}
@@ -241,15 +245,59 @@ HTML;
 	}
 
 	function results() {
+		echo <<<HTML
+			<style>
+				table.test {
+					margin-bottom: 2em;
+				}
+
+			td.result {
+				white-space: pre;
+			}
+			</style>
+HTML;
+
 		if ($this->post) {
 			echo $this->result($this->post->message);
 		} else {
+			echo $this->result("temps de lancement", 1);
+
 			foreach ($this->test_messages() as $message) {
 				echo $this->result($message);
 			}
 		}
 
 		$this->cleanup();
+
+		echo <<<HTML
+			<script src="https://d3js.org/d3.v4.min.js"></script>
+			<script>
+				let tests = document.querySelectorAll('table.test');
+
+				let lang_scale = d3.scaleOrdinal(d3.schemeCategory10)
+
+				for (var i = 0; i < tests.length; i++) {
+					let test = tests.item(i);
+					console.log(test);
+
+					let slips = test.querySelectorAll('tr.slip');
+
+					let performance_scale = d3.scaleLinear()
+						.domain(d3.extent(Array.prototype.map.call(slips, slip => +slip.dataset.time)))
+						.range(['turquoise', 'red']);
+
+					let result_scale = d3.scaleLinear()
+						.domain([0, 1])
+						.range(['white', 'lime']);
+
+					slips.forEach(slip => {
+						slip.querySelector('td.lang').style.color             = lang_scale(slip.dataset.lang);
+						slip.querySelector('td.time').style.backgroundColor   = performance_scale(+slip.dataset.time);
+						slip.querySelector('td.result').style.backgroundColor = result_scale(+slip.dataset.percent);
+					});
+				}
+			</script>
+HTML;
 	}
 
 	function cleanup() {
@@ -261,6 +309,42 @@ HTML;
 		}
 
 		$this->processes = [];
+	}
+
+	function client_slip($message, $backend_type = 'raw') {
+	  $text = htmlspecialchars($message, ENT_NOQUOTES);
+
+	  $dom = new DOMDocument;
+	  @$dom->loadXML('<message>' . $text . '</message>');
+
+	  $post = $dom->firstChild;
+
+	  if ($post) {
+		foreach ($post->childNodes as $node) {
+		  if (isset($node->tagName)) switch ($node->tagName) {
+			case 'a':
+			case 'b':
+			case 'i':
+			case 'u':
+			case 's':
+			  break;
+			default:
+			  $node->parentNode->replaceChild($dom->createTextNode($node->textContent), $node);
+			  break;
+		  }
+		}
+
+		$post = $dom->saveHTML($post);
+		$post = str_replace('<message>', '', $post);
+		$post = str_replace('</message>', '', $post);
+		if ($backend_type != 'raw') {
+		  $post = html_entity_decode($post);
+		}
+		return $post;
+	  } else {
+		// Let's stay safe, but still try to display something.
+		return "<em>(XML invalide)</em>";
+	  }
 	}
 }
 
