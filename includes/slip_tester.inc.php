@@ -1,69 +1,43 @@
 <?php
 
 class Slip {
-	public $persistent = true;
+	public $cmd = "";
+	public $code = "";
+	public $name = "";
+	public $lang = "";
+	public $cwd = "/tmp";
+
+	public function __construct($config) {
+		$this->cmd = $config['command'];
+		$this->name = $config['name'];
+		$this->lang = $config['lang'];
+
+		if (isset($config['source'])) {
+			$this->code = $config['source'];
+		}
+
+		if (isset($config['url'])) {
+			$this->url = $config['url'];
+		}
+
+		if (isset($config['cwd'])) {
+			$this->cwd = $config['cwd'];
+		}
+	}
 
 	public function source() {
 		return file_get_contents($this->code);
 	}
 
 	public function link() {
-		return "/slip/" . str_replace("Slip_", "", get_class($this));
+		if (!empty($this->code)) {
+			return "/slip/" . str_replace("Slip_", "", get_class($this));
+		} else if (!empty($this->url)) {
+			return $this->url;
+		} else {
+			return "#";
+		}
 	}
-}
-
-class Slip_Slipounet extends Slip {
-	public $cmd = 'unshare -n '.__DIR__.'/../bin/slip-slipounet.php';
-	public $code = __DIR__.'/../bin/slip-slipounet.php';
-	public $name = 'Slipounet (PHP)';
-}
-
-class Slip_SlipounetNG extends Slip {
-	public $cmd = 'unshare -n '.__DIR__.'/../bin/slip-slipounet-ng.php';
-	public $code = __DIR__.'/../bin/slip-slipounet-ng.php';
-	public $name = 'Slipounet NG (PHP)';
-}
-
-class Slip_D7 extends Slip {
-	public $cmd = 'unshare -n '.__DIR__.'/../bin/slip-d7.php';
-	public $code = __DIR__.'/../bin/slip-d7.php';
-	public $name = 'D7 (PHP)';
-}
-
-class Slip_Miaoli extends Slip {
-	public $cmd = 'unshare -n node '.__DIR__.'/../bin/slip-miaoli.js';
-	public $code = __DIR__.'/../bin/slip-miaoli.js';
-	public $name = 'Miaoli (JS)';
-}
-
-class Slip_GoBoard extends Slip {
-	public $cmd = 'unshare -n '.__DIR__.'/../bin/slipcleaner';
-	public $code = __DIR__.'/../bin/slipcleaner.go';
-	public $name = 'GoBoard (Go)';
-}
-
-class Slip_JSlip extends Slip {
-	public $cmd = 'unshare -n java -jar '.__DIR__.'/../bin/jslip-1.0.1.jar';
-	public $code = __DIR__.'/../bin/jslip-1.0.1.java';
-	public $name = 'JSlip (Java)';
-}
-
-class Slip_Sveetch extends Slip {
-	public $cmd = 'unshare -n python2 '.__DIR__.'/../bin/slip-sveetch.py';
-	public $code = __DIR__.'/../bin/slip-sveetch.py';
-	public $name = 'Django tribune (Python 2)';
-}
-
-class Slip_cnitize extends Slip {
-	public $cmd = 'unshare -n /home/seeschloss/src/cnitize/cnitize';
-	public $code = '/home/seeschloss/src/cnitize/cnitize.c';
-	public $name = 'cnitize (C)';
-}
-
-class Slip_DLFP extends Slip {
-	public $cmd = 'ruby --encoding utf-8 '.__DIR__.'/../bin/slip-dlfp.rb';
-	public $code = __DIR__.'/../bin/slip-dlfp.rb';
-	public $name = 'DLFP (Ruby)';
 }
 
 class Slip_Tester {
@@ -78,17 +52,9 @@ class Slip_Tester {
 			$this->post = Post::get($post_id, null, true);
 		}
 
-		$this->slips = [
-			new Slip_Slipounet(),
-			new Slip_SlipounetNG(),
-			new Slip_D7(),
-			new Slip_Miaoli(),
-			new Slip_GoBoard(),
-			new Slip_JSlip(),
-			new Slip_Sveetch(),
-			new Slip_cnitize(),
-			new Slip_DLFP(),
-		];
+		foreach (config::slips() as $slip_config) {
+			$this->slips[] = new Slip($slip_config);
+		}
 	}
 
     function test_messages() {

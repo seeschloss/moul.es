@@ -47,6 +47,12 @@ class config {
 			return null;
 		}
 	}
+
+	static public function slips() {
+		global $slips_config;
+
+		return $slips_config;
+	}
 }
 
 class debug {

@@ -131,3 +131,91 @@ $global_config = array(
 	),
 );
 
+$slips_config = [
+	'slipounet' => [
+		'command' => 'unshare -n '.__DIR__.'/../bin/slip-slipounet.php',
+		'source' => __DIR__.'/../bin/slip-slipounet.php',
+		'name' => 'Slipounet',
+		'lang' => 'PHP',
+	],
+	'SlipounetNG' => [
+		'command' => 'unshare -n '.__DIR__.'/../bin/slip-slipounet-ng.php',
+		'source' => __DIR__.'/../bin/slip-slipounet-ng.php',
+		'name' => 'Slipounet NG',
+		'lang' => 'PHP',
+	],
+
+	'D7' => [
+		'command' => 'unshare -n '.__DIR__.'/../bin/slip-d7.php',
+		'source' => __DIR__.'/../bin/slip-d7.php',
+		'name' => 'D7',
+		'lang' => 'PHP',
+	],
+
+	'Miaoli' => [
+		'command' => 'unshare -n node '.__DIR__.'/../bin/slip-miaoli.js',
+		'source' => __DIR__.'/../bin/slip-miaoli.js',
+		'name' => 'Miaoli',
+		'lang' => 'JS',
+	],
+
+	'GoBoard' => [
+		'command' => 'unshare -n src/go/bin/slipcleaner',
+		'source' => 'src/go/src/github.com/dguihal/goboard/tools/slipcleaner/slipcleaner.go',
+		'url' => 'https://github.com/dguihal/goboard',
+		'name' => 'GoBoard',
+		'lang' => 'Go',
+	],
+
+	'JSlip' => [
+		'command' => 'unshare -n java -jar '.__DIR__.'/../bin/jslip-1.0.1.jar',
+		'source' => __DIR__.'/../bin/jslip-1.0.1.java',
+		'name' => 'JSlip',
+		'lang' => 'Java',
+	],
+
+	'NSlip' => [
+		'command' => 'unshare -n node src/nslip/main.js',
+		'url' => 'https://github.com/devnewton/nslip',
+		'name' => 'NSlip',
+		'lang' => 'JS (PEG)',
+
+		'cwd' => 'src/nslip',
+	],
+
+	'Sveetch' => [
+		'command' => 'unshare -n python2 '.__DIR__.'/../bin/slip-sveetch.py',
+		'source' => __DIR__.'/../bin/slip-sveetch.py',
+		'name' => 'Django tribune',
+		'lang' => 'Python 2',
+	],
+
+	'Michel' => [
+		'command' => 'ruby src/slip-ruby/slip.rb',
+		'source' => 'src/slip-ruby/slip.rb',
+		'name' => 'Michel',
+		'lang' => 'Ruby',
+	],
+
+	'cnitize' => [
+		'command' => 'unshare -n src/cnitize/cnitize',
+		'source' => 'src/cnitize/cnitize.c',
+		'name' => 'cnitize',
+		'lang' => 'C',
+	],
+
+	'SmallML' => [
+		'command' => 'unshare -n node src/smallmlsanitizer/index.js',
+		'url' => 'https://github.com/n-e/smallmlsanitizer',
+		'name' => 'SmallMLSanitizer',
+		'lang' => 'JS (PEG)',
+	],
+
+// pas de unshare -n parce que... ruby ne tourne pas sans accès réseau ? [:totoz]
+	'DLFP' => [
+		'command' => 'ruby --encoding utf-8 '.__DIR__.'/../bin/slip-dlfp.rb',
+		'source' => __DIR__.'/../bin/slip-dlfp.rb',
+		'name' => 'DLFP',
+		'lang' => 'Ruby',
+	],
+];
