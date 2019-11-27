@@ -121,6 +121,10 @@ class Post {
 			$this->datetime = DateTime::createFromFormat("YmdHis", $this->time);
 		}
 
+		if (!$this->datetime) {
+			$this->datetime = new DateTime();
+		}
+
 		return $this->datetime;
 	}
 

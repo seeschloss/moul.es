@@ -57,7 +57,7 @@ function flush_queue() {
 	global $queue;
 	global $test;
 
-	if ($n = count($queue)) {
+	if (is_array($queue) and $n = count($queue)) {
 		if ($test) {
 			echo "Flushing queue ($n posts)...\n";
 		}
@@ -96,24 +96,37 @@ function flush_queue() {
 			$login = $db->escape($post->login);
 			$message = $db->escape($post->message);
 
+			$has_totoz = (int)$post->has_totoz();
+			$has_bold = (int)$post->has_bold();
+			$has_url = (int)$post->has_url();
+			$is_prems = (int)$post->is_prems();
+			$is_deuz = (int)$post->is_deuz();
+			$post_length = mb_strlen($post->message);
+			$url_domain = $db->escape($post->url_domain());
+			$has_horloge = (int)$post->has_horloge();
+			$is_naked_url = (int)$post->is_naked_url();
+			$is_question = (int)$post->is_question();
+			$has_redface = (int)$post->has_redface();
+			$display_username = $db->escape($post->display_username());
+
 			$parts[] = "(
 				'$id',
 				'$time',
 				'$info',
 				'$login',
 				'$message',
-				'{$post->has_totoz()}',
-				'{$post->has_bold()}',
-				'{$post->has_url()}',
-				'{$post->is_prems()}',
-				'{$post->is_deuz()}',
-				'".mb_strlen($post->message)."',
-				'{$db->escape($post->url_domain())}',
-				'{$post->has_horloge()}',
-				'{$post->is_naked_url()}',
-				'{$post->is_question()}',
-				'{$post->has_redface()}',
-				'{$post->display_username()}'
+				{$has_totoz},
+				{$has_bold},
+				{$has_url},
+				{$is_prems},
+				{$is_deuz},
+				{$post_length},
+				'{$url_domain}',
+				{$has_horloge},
+				{$is_naked_url},
+				{$is_question},
+				{$has_redface},
+				'{$display_username}'
 			)";
 
 			if (strpos(mb_strtolower($post->message), "ta gueule") !== FALSE) {

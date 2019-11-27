@@ -1,13 +1,16 @@
 <?php
 
 class Slip {
+	public $id = "";
 	public $cmd = "";
 	public $code = "";
 	public $name = "";
 	public $lang = "";
 	public $cwd = "/tmp";
 
-	public function __construct($config) {
+	public function __construct($config, $id) {
+		$this->id = $id;
+
 		$this->cmd = $config['command'];
 		$this->name = $config['name'];
 		$this->lang = $config['lang'];
@@ -31,7 +34,7 @@ class Slip {
 
 	public function link() {
 		if (!empty($this->code)) {
-			return "/slip/" . str_replace("Slip_", "", get_class($this));
+			return "/slip/" . $this->id;
 		} else if (!empty($this->url)) {
 			return $this->url;
 		} else {
@@ -52,8 +55,8 @@ class Slip_Tester {
 			$this->post = Post::get($post_id, null, true);
 		}
 
-		foreach (config::slips() as $slip_config) {
-			$this->slips[] = new Slip($slip_config);
+		foreach (config::slips() as $slip_id => $slip_config) {
+			$this->slips[] = new Slip($slip_config, $slip_id);
 		}
 	}
 
@@ -75,11 +78,13 @@ class Slip_Tester {
 		'entités HTML : &gt; &lt; &quot; &amp; &nbsp;',
 		"caractères de contrôle : \x08 (backspace) \x1B (escape)",
 		"unicode à la con : 🐧 (manchot, 4 octets) 👩‍👩‍👧‍👦 (deux femmes, une fille, et un garçon, en 7 glyphes et 25 octets)",
+//		"unicode invalide : \xf0\x90\x28\xbc (de quatre octets)",
 		'Horloges : 14:00 14:00:00 14:00:00²',
 		'Totoz : [:totoz] [:velasquez:5]',
         'URL : http://example.com',
         'URL avec des espaces : http://example.com/chemin%20avec%20des%20espaces?param=des+espaces',
         'URL (dans une parenthèse http://example.com)',
+        'URL qui contient une parenthèse : https://fr.wikipedia.org/wiki/G%C3%A9rard_(prénom)',
         'URL suivie d\'une virgule http://example.com, comme ça',
         'URL suivie d\'un totoz http://example.com[:totoz]',
         'URL avec un numéro de port http://example.com:80/chemin',
@@ -100,7 +105,7 @@ class Slip_Tester {
 			  // stdbuf est là pour forcer les slips à flusher chaque ligne qui sort, sinon
 			  // comme stdout/stderr sont des pipes et pas un TTY, il y a un gros buffer (lol)
 			  // et mon fgets() bloque comme un con parce qu'il n'a rien à lire
-			  $p = proc_open("stdbuf -oL -eL ".$slip->cmd, $descriptorspec, $pipes, $slip->cwd, [
+			  $p = proc_open("stdbuf -i0 -oL -eL ".$slip->cmd, $descriptorspec, $pipes, $slip->cwd, [
 				  'HOME' => '/home/seeschloss',
 				  'LC_ALL' => 'en_US.UTF-8',
 			  ]);
@@ -218,7 +223,7 @@ HTML;
 				}
 
 			td.result {
-				white-space: pre;
+				white-space: pre-wrap;
 			}
 			</style>
 HTML;

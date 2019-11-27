@@ -24,7 +24,7 @@ if ($argc > 1) foreach ($argv as $arg) {
 require_once __DIR__."/../includes/include.inc.php";
 
 if (!config::init($tribune)) {
-	exit();
+	exit(1);
 }
 
 $f = fopen('php://stdin', 'r');
@@ -217,10 +217,12 @@ function post($time, $message) {
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, config::get('backend')['post_url']);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, array(config::get('backend')['post_fields'] => $clock.' '.$message));
-	curl_setopt($ch, CURLOPT_COOKIE, config::get('backend')['cookie']);
 	curl_setopt($ch, CURLOPT_REFERER, config::get('backend')['referer']);
 	curl_setopt($ch, CURLOPT_USERAGENT, "Fortunes bot");
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	if (isset(config::get('backend')['cookie'])) {
+		curl_setopt($ch, CURLOPT_COOKIE, config::get('backend')['cookie']);
+	}
 
 	curl_exec($ch);
 }

@@ -112,7 +112,6 @@ class User_Stats {
 			}
 			$gif->setImageDelay(200);
 
-			header('Content-type: image/gif');
 			$gif->writeImages($cache_dir."/".$cache_key, true);
 		}
 
@@ -120,9 +119,9 @@ class User_Stats {
 	}
 
 	function hourly_activity_chart($activity, $title = NULL, $min = NULL, $max = NULL) {
-		include_once __DIR__.'/../libraries/pChart2.1.4/class/pData.class.php';
-		include_once __DIR__.'/../libraries/pChart2.1.4/class/pDraw.class.php';
-		include_once __DIR__.'/../libraries/pChart2.1.4/class/pImage.class.php';
+		include_once __DIR__.'/../libraries/pChart/class/pData.class.php';
+		include_once __DIR__.'/../libraries/pChart/class/pDraw.class.php';
+		include_once __DIR__.'/../libraries/pChart/class/pImage.class.php';
 
 		$data_max = 0;
 
@@ -131,6 +130,9 @@ class User_Stats {
 		foreach ($activity as $login => $posts_per_hour) {
 			$data->addPoints(array_values($posts_per_hour), $login);
 			$data_max = max($data_max, max($posts_per_hour));
+		}
+		if (empty($activity)) {
+			$data->addPoints(array(), "");
 		}
 		$data->setAxisName(0, "Posts");
 		$data->setAxisPosition(0, AXIS_POSITION_LEFT);
@@ -147,7 +149,7 @@ class User_Stats {
 
 		/* Set the default font */
 		$image->setFontProperties(array(
-			"FontName" => __DIR__."/../libraries/pChart2.1.4/fonts/verdana.ttf",
+			"FontName" => __DIR__."/../libraries/pChart/fonts/verdana.ttf",
 			"FontSize" => 10,
 		));
 

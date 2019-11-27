@@ -107,10 +107,10 @@ switch ($route[1]) {
 		break;
 	case 'slip':
 			if (isset($route[2])) {
-				$class = "Slip_".$route[2];
+				$slips = config::slips();
 
-				if (class_exists($class)) {
-					$slip = new $class();
+				if (isset($slips[$route[2]])) {
+					$slip = new Slip($slips[$route[2]], $route[2]);
 					header("Content-Type: text/plain; charset=utf8");
 					echo $slip->source();
 				}
@@ -127,7 +127,7 @@ switch ($route[1]) {
 		break;
 	case 'stats.gif':
 			header('Content-type: image/gif');
-			echo User_Stats::hourly_activity_gif(explode(",", $route[2]));
+			echo User_Stats::hourly_activity_gif(explode(",", urldecode($route[2])));
 		break;
 	default:
 		header('HTTP/1.0 404 Not found');
